@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools {
-        maven 'Maven'  // Utilise la configuration par défaut ou celle configurée dans Jenkins
+        maven 'maven3'  // Utilise la configuration par défaut ou celle configurée dans Jenkins
     }
     environment {
         JAVA_HOME = '/usr/lib/jvm/java-11-openjdk'
