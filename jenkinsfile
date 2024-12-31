@@ -4,6 +4,7 @@ pipeline {
         DOCKER_IMAGE = "taha2024/spring-crud" // Nom d'utilisateur DockerHub et nom de l'image Docker à créer
     }
     stages {
+
         stage('Cloner le projet') {
             steps {
                 // Cloner le dépôt Git
