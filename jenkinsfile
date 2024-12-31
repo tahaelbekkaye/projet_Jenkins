@@ -3,8 +3,8 @@ pipeline {
 
     tools {
         // Assurez-vous que Maven est configuré dans Jenkins
-        maven 'Maven-3.8.1'  // Maven configuré sur Jenkins
-        jdk 'JDK-11.0.21+9'    // JDK que tu utilises pour ton projet Java
+        maven 'maven3'  // Maven configuré sur Jenkins
+        jdk 'jdk11'    // JDK que tu utilises pour ton projet Java
     }
 
     stages {
