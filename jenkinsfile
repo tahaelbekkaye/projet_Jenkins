@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+    stages {
+        stage('Clone') {
+            steps {
+                git 'https://github.com/tahaelbekkaye/projet_Jenkins.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh './mvnw clean install -DskipTests'
+            }
+        }
+
+        stage('Unit Test') {
+            steps {
+                sh './mvnw test'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                script {
+                    sh 'docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .'
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh 'docker login -u $DOCKER_USER -p $DOCKER_PASSWORD'
+                        sh 'docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    sh 'docker-compose -f docker-compose.yml pull'
+                    sh 'docker-compose -f docker-compose.yml up -d'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline exécuté avec succès !'
+        }
+        failure {
+            echo 'Le pipeline a échoué.'
+        }
+    }
+}
