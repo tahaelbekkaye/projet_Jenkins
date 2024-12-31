@@ -1,36 +1,54 @@
 pipeline {
     agent any
-    stages {
-        stage('Clone Repository') {
-            steps {
-                git 'https://github.com/tahaelbekkaye/projet_Jenkins.git'
-            }
-        }
-        stage('Build') {
-            steps {
-                sh './mvnw clean package -DskipTests'
-            }
-        }
-        stage('Run Unit Tests') {
-            steps {
-                sh './mvnw test'
-            }
-        }
-        stage('Deploy Locally') {
-            steps {
-                sh 'java -jar target/*.jar'
-            }
-        }
+    environment {
+        DOCKER_IMAGE = "taha2024/spring-crud" // Nom d'utilisateur DockerHub et nom de l'image Docker à créer
     }
-    post {
-        always {
-            echo 'Pipeline terminé!'
+    stages {
+        stage('Cloner le projet') {
+            steps {
+                // Cloner le dépôt Git
+                git branch: 'master', url: 'https://github.com/tahaelbekkaye/projet_Jenkins.git'
+            }
         }
-        success {
-            echo 'Build et déploiement réussi!'
+        stage('Construction du projet') {
+            steps {
+                script {
+                    // Construire le projet Java avec Maven
+                    sh './mvnw clean package'
+                }
+            }
         }
-        failure {
-            echo 'Une erreur est survenue durant le pipeline.'
+        stage('Exécuter les tests') {
+            steps {
+                script {
+                    // Exécuter les tests et archiver les résultats
+                    sh './mvnw test'
+                }
+                junit 'target/surefire-reports/*.xml' // Archiver les rapports de test
+            }
+        }
+        stage('Construire l’image Docker') {
+            steps {
+                script {
+                    // Construire l'image Docker à partir du projet Java
+                    sh """
+                    echo 'FROM openjdk:17-jdk-slim' > Dockerfile
+                    echo 'COPY target/*.jar app.jar' >> Dockerfile
+                    echo 'ENTRYPOINT ["java", "-jar", "/app.jar"]' >> Dockerfile
+                    docker build -t ${DOCKER_IMAGE}:latest .
+                    """
+                }
+            }
+        }
+        stage('Pousser l’image Docker') {
+            steps {
+                script {
+                    // Se connecter à DockerHub et pousser l'image
+                    docker.withRegistry('', 'docker-hub-credentials') {
+                        sh "docker push ${DOCKER_IMAGE}:latest"
+                    }
+                }
+            }
         }
     }
 }
