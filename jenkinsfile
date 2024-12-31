@@ -14,7 +14,7 @@ pipeline {
         stage('Construction du projet') {
             steps {
                 script {
-                    // Construire le projet Java avec Maven
+                    sh 'chmod +x mvnw'
                     sh './mvnw clean package'
                 }
             }
