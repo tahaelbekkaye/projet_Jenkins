@@ -1,59 +1,36 @@
 pipeline {
     agent any
+    tools {
+        maven 'Maven-3.8.1'  // Assurez-vous que Maven est installé sur Jenkins
+    }
+    environment {
+        JAVA_HOME = '/usr/lib/jvm/java-11-openjdk'  // Spécifie la version de Java
+    }
     stages {
-        stage('Clone') {
+        stage('Clone Repository') {
             steps {
-                git 'https://github.com/tahaelbekkaye/projet_Jenkins.git'
+                git 'https://github.com/tahaelbekkaye/projet_Jenkins.git'  // URL de ton repo GitHub
             }
         }
-
         stage('Build') {
             steps {
-                sh './mvnw clean install -DskipTests'
+                sh 'mvn clean install'  // Exécute Maven pour construire le projet
             }
         }
-
-        stage('Unit Test') {
+        stage('Test') {
             steps {
-                sh './mvnw test'
+                sh 'mvn test'  // Exécute les tests unitaires avec Maven
             }
         }
-
-        stage('Docker Build') {
-            steps {
-                script {
-                    sh 'docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .'
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh 'docker login -u $DOCKER_USER -p $DOCKER_PASSWORD'
-                        sh 'docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}'
-                    }
-                }
-            }
-        }
-
         stage('Deploy') {
             steps {
-                script {
-                    sh 'docker-compose -f docker-compose.yml pull'
-                    sh 'docker-compose -f docker-compose.yml up -d'
-                }
+                echo 'Deploying to server...'  // Ajoute ta logique de déploiement ici
             }
         }
     }
-
     post {
-        success {
-            echo 'Pipeline exécuté avec succès !'
-        }
-        failure {
-            echo 'Le pipeline a échoué.'
+        always {
+            echo 'Pipeline finished!'
         }
     }
 }
