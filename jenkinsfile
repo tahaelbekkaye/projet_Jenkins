@@ -1,36 +1,56 @@
 pipeline {
     agent any
+
     tools {
-        maven 'maven3'  // Utilise la configuration par défaut ou celle configurée dans Jenkins
+        // Assurez-vous que Maven est configuré dans Jenkins
+        maven 'Maven-3.8.1'  // Maven configuré sur Jenkins
+        jdk 'JDK-11.0.21+9'    // JDK que tu utilises pour ton projet Java
     }
-    environment {
-        JAVA_HOME = '/usr/lib/jvm/java-11-openjdk'
-    }
+
     stages {
-        stage('Clone Repository') {
+        stage('Cloner le dépôt Git') {
             steps {
-                git 'https://github.com/tahaelbekkaye/projet_Jenkins.git'
+                script {
+                    // Cloner ton dépôt Git
+                    git 'https://github.com/tahaelbekkaye/projet_Jenkins.git'
+                }
             }
         }
-        stage('Build') {
+
+        stage('Compiler le projet') {
             steps {
-                sh 'mvn clean install'
+                script {
+                    // Utilisation de Maven pour compiler le projet
+                    sh "mvn clean install"
+                }
             }
         }
-        stage('Test') {
+
+        stage('Exécuter les tests unitaires') {
             steps {
-                sh 'mvn test'
+                script {
+                    // Exécution des tests unitaires avec Maven
+                    sh "mvn test"
+                }
             }
         }
-        stage('Deploy') {
+
+        stage('Publier l\'artefact') {
             steps {
-                echo 'Deploying to server...'
+                script {
+                    // Publier l'artefact (ex: JAR) sur un serveur Nexus ou Artifactory
+                    sh "mvn deploy"
+                }
             }
         }
     }
+
     post {
-        always {
-            echo 'Pipeline finished!'
+        success {
+            echo 'Pipeline terminé avec succès!'
+        }
+        failure {
+            echo 'Pipeline échoué!'
         }
     }
 }
